@@ -1,0 +1,13 @@
+RENDER DEPLOYMENT QUICK GUIDE
+
+1. Upload the contents of this folder to a GitHub repository.
+2. In Render, choose New + > Web Service and connect that GitHub repository.
+3. Set:
+   Language: Python 3
+   Build Command: pip install -r requirements.txt
+   Start Command: gunicorn app:app
+   Instance Type: Free
+4. Click Create Web Service and wait for the deploy to finish.
+5. Open the public onrender.com URL shown in your Render dashboard.
+
+Important: the free Render service has an ephemeral filesystem. This demo's SQLite database can reset when the service restarts, spins down, or redeploys. Use it as a college demo, not for important inventory records.

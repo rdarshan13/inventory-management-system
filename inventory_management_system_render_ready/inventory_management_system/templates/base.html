@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}StockPilot{% endblock %} | Inventory Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-mark">S</span><span>stock<span class="brand-light">pilot</span><small>INVENTORY CONTROL</small></span></a>
+    <div class="side-label">WORKSPACE</div>
+    <a class="nav-item active" href="{{ url_for('dashboard') }}"><span class="nav-icon">▦</span> Overview</a>
+    <a class="nav-item" href="{{ url_for('add_product') }}"><span class="nav-icon">＋</span> Add product</a>
+    <div class="sidebar-bottom">
+      <div class="help-card"><div class="help-icon">✦</div><strong>Stay in control</strong><p>Keep your stock accurate and your business moving.</p></div>
+      <div class="profile"><div class="avatar">A</div><div><strong>Admin workspace</strong><small>Local demo</small></div><span class="online-dot"></span></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="mobile-brand"><span class="brand-mark">S</span> stockpilot</div>
+      <div class="breadcrumb">Workspace <span>/</span> <strong>{% block breadcrumb %}Overview{% endblock %}</strong></div>
+      <div class="topbar-right"><span class="live-dot"></span><span>Inventory system online</span><div class="avatar small-avatar">A</div></div>
+    </header>
+    <section class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}<button type="button" onclick="this.parentElement.remove()" aria-label="Dismiss">×</button></div>
+          {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </section>
+    <footer>© 2026 StockPilot <span>•</span> Simple stock management, smarter decisions.</footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

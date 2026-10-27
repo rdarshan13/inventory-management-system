@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ mode }} product{% endblock %}
+{% block breadcrumb %}{{ mode }} product{% endblock %}
+{% block content %}
+<div class="page-heading form-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> INVENTORY CATALOGUE</div><h1>{{ mode }} product<span class="heading-period">.</span></h1><p class="subheading">{% if mode == 'Add' %}Add a new item and its details to your inventory.{% else %}Keep your product information accurate and up to date.{% endif %}</p></div><a class="btn btn-outline" href="{{ url_for('dashboard') }}">← Back to inventory</a></div>
+<div class="form-layout">
+  <div class="form-card">
+    <div class="form-card-heading"><div class="form-icon">▦</div><div><h2>Product details</h2><p>Fields marked with <span class="required">*</span> are required.</p></div></div>
+    <form method="post" class="product-form">
+      <div class="form-grid">
+        <div class="form-field full"><label for="name">Product name <span class="required">*</span></label><input id="name" name="name" class="field-input" required maxlength="120" placeholder="e.g. Wireless Mouse" value="{{ product.get('name', '') }}"></div>
+        <div class="form-field"><label for="sku">SKU / Product code <span class="required">*</span></label><input id="sku" name="sku" class="field-input" required maxlength="40" placeholder="e.g. ELE-001" value="{{ product.get('sku', '') }}"><small>A unique identifier for each product.</small></div>
+        <div class="form-field"><label for="category">Category</label><input id="category" name="category" class="field-input" maxlength="60" placeholder="e.g. Electronics" value="{{ product.get('category', '') }}"><small>Group similar products together.</small></div>
+        <div class="form-field"><label for="quantity">Quantity in stock <span class="required">*</span></label><input id="quantity" name="quantity" class="field-input" type="number" min="0" step="1" required value="{{ product.get('quantity', 0) }}"></div>
+        <div class="form-field"><label for="price">Unit price (₹) <span class="required">*</span></label><div class="price-input"><span>₹</span><input id="price" name="price" class="field-input" type="number" min="0" step="0.01" required value="{{ product.get('price', 0) }}"></div></div>
+        <div class="form-field full"><label for="supplier">Supplier name</label><input id="supplier" name="supplier" class="field-input" maxlength="120" placeholder="e.g. ABC Wholesale" value="{{ product.get('supplier', '') }}"></div>
+      </div>
+      <div class="form-actions"><a class="btn btn-outline" href="{{ url_for('dashboard') }}">Cancel</a><button class="btn btn-primary" type="submit">{{ 'Save changes' if mode == 'Edit' else '＋ Add product' }}</button></div>
+    </form>
+  </div>
+  <aside class="form-aside"><div class="aside-art"><span class="art-box art-box-one"></span><span class="art-box art-box-two"></span><span class="art-box art-box-three"></span><span class="art-spark">✦</span></div><h3>Good data, better decisions.</h3><p>Use a consistent SKU for every product. It makes searching, stock checks, and future reporting much easier.</p><div class="aside-divider"></div><div class="aside-check"><span>✓</span><div><strong>Unique SKU</strong><small>Each product needs its own code.</small></div></div><div class="aside-check"><span>✓</span><div><strong>Accurate quantity</strong><small>Use zero if the item is out of stock.</small></div></div><div class="aside-check"><span>✓</span><div><strong>Current unit price</strong><small>Stock value is calculated automatically.</small></div></div></aside>
+</div>
+{% endblock %}

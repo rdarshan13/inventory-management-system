@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR BUSINESS AT A GLANCE</div><h1>Inventory overview<span class="heading-period">.</span></h1><p class="subheading">A clear picture of what's on your shelves today.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('add_product') }}"><span class="btn-plus">＋</span> Add product</a>
+</div>
+
+<div class="stats-grid">
+  <article class="stat-card"><div class="stat-top"><span class="stat-label">Total products</span><span class="stat-icon purple">▦</span></div><div class="stat-number">{{ stats.products }}</div><div class="stat-foot"><span class="mini-dot purple-dot"></span> Unique items in catalogue</div></article>
+  <article class="stat-card"><div class="stat-top"><span class="stat-label">Units in stock</span><span class="stat-icon blue">▤</span></div><div class="stat-number">{{ "{:,}".format(stats.units) }}</div><div class="stat-foot"><span class="mini-dot blue-dot"></span> Across all products</div></article>
+  <article class="stat-card"><div class="stat-top"><span class="stat-label">Stock value</span><span class="stat-icon green">₹</span></div><div class="stat-number value-number">{{ stats.value|inr }}</div><div class="stat-foot"><span class="mini-dot green-dot"></span> Based on current quantity × price</div></article>
+  <article class="stat-card"><div class="stat-top"><span class="stat-label">Needs attention</span><span class="stat-icon orange">!</span></div><div class="stat-number">{{ stats.low_stock + stats.out_stock }}</div><div class="stat-foot"><span class="warning-text">{{ stats.low_stock }} low stock</span><span class="foot-separator">·</span><span class="danger-text">{{ stats.out_stock }} out</span></div></article>
+</div>
+
+<div class="section-heading"><div><h2>Product inventory</h2><p>Manage items, quantities, and supplier details.</p></div><span class="count-pill">{{ products|length }} item{% if products|length != 1 %}s{% endif %} shown</span></div>
+<div class="inventory-panel">
+  <form class="toolbar" method="get" action="{{ url_for('dashboard') }}">
+    <label class="search-box"><span>⌕</span><input type="search" name="q" value="{{ q }}" placeholder="Search name, SKU or supplier..." aria-label="Search products"><kbd>↵</kbd></label>
+    <div class="toolbar-right"><label class="filter-select"><span>Category</span><select name="category" onchange="this.form.submit()"><option value="">All categories</option>{% for c in categories %}<option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label><button class="btn btn-outline" type="submit">Search</button>{% if q or selected_category %}<a class="clear-link" href="{{ url_for('dashboard') }}">Clear</a>{% endif %}</div>
+  </form>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th>UNIT PRICE</th><th>QUANTITY</th><th>STOCK STATUS</th><th class="actions-head">ACTIONS</th></tr></thead>
+      <tbody>
+      {% for p in products %}
+        <tr>
+          <td><div class="product-cell"><div class="product-icon icon-{{ loop.index0 % 5 }}">{% if 'elect' in p.category|lower %}⌁{% elif 'stat' in p.category|lower %}▤{% elif 'office' in p.category|lower %}▧{% else %}□{% endif %}</div><div><strong>{{ p.name }}</strong><small>{{ p.supplier or 'No supplier listed' }}</small></div></div></td>
+          <td><span class="sku">{{ p.sku }}</span></td>
+          <td><span class="category-tag">{{ p.category }}</span></td>
+          <td class="price">{{ p.price|inr }}</td>
+          <td><strong class="quantity">{{ p.quantity }}</strong><span class="units-label"> units</span></td>
+          <td>{% if p.quantity == 0 %}<span class="status status-out"><i></i> Out of stock</span>{% elif p.quantity <= 10 %}<span class="status status-low"><i></i> Low stock</span>{% else %}<span class="status status-good"><i></i> In stock</span>{% endif %}</td>
+          <td><div class="row-actions"><button class="icon-button" type="button" title="Adjust stock" aria-label="Adjust stock for {{ p.name }}" onclick="openStockModal({{ p.id }}, {{ p.name|tojson }}, {{ p.quantity }})">↕</button><a class="icon-button" title="Edit product" aria-label="Edit {{ p.name }}" href="{{ url_for('edit_product', product_id=p.id) }}">✎</a><form method="post" action="{{ url_for('delete_product', product_id=p.id) }}" onsubmit="return confirm('Delete {{ p.name|e }}? This cannot be undone.');"><button class="icon-button delete-button" title="Delete product" aria-label="Delete {{ p.name }}" type="submit">⌫</button></form></div></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⌕</div><strong>No products found</strong><p>Try another search or add a new product to your inventory.</p><a class="btn btn-primary" href="{{ url_for('add_product') }}">＋ Add product</a></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer"><span>Showing <strong>{{ products|length }}</strong> of <strong>{{ stats.products }}</strong> products</span><span><span class="live-dot"></span> Synced with local database</span></div>
+</div>
+<div class="bottom-note"><span class="note-icon">✦</span><div><strong>Quick tip</strong><p>Products with 10 units or fewer are flagged as low stock. Adjust the threshold in <code>app.py</code> to match your business.</p></div></div>
+
+<div class="modal-backdrop" id="stockModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" type="button" onclick="closeStockModal()" aria-label="Close">×</button>
+    <div class="eyebrow"><span class="eyebrow-line"></span> INVENTORY CONTROL</div><h2 id="modalTitle">Adjust stock</h2><p class="modal-subtitle" id="stockProductName">Update product quantity.</p>
+    <div class="current-stock">Current stock <strong id="currentStock">0 units</strong></div>
+    <form id="stockForm" method="post">
+      <label class="field-label">Action</label><div class="stock-actions"><label><input type="radio" name="action" value="add" checked><span>＋ Add stock</span></label><label><input type="radio" name="action" value="remove"><span>− Remove stock</span></label></div>
+      <label class="field-label" for="stockAmount">Quantity</label><input class="field-input" id="stockAmount" name="amount" type="number" min="1" step="1" required placeholder="Enter number of units">
+      <div class="modal-buttons"><button class="btn btn-outline" type="button" onclick="closeStockModal()">Cancel</button><button class="btn btn-primary" type="submit">Update stock</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
